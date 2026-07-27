@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LinearRegression
+import xgboost as xgb
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.preprocessing import StandardScaler
@@ -50,7 +50,7 @@ X = df_clean[feature_cols]
 y = df_clean["target_180d_return"]
 
 #Setup Time series split
-tscv = TimeSeriesSplit(n_splits=5)
+tscv = TimeSeriesSplit(n_splits=4)
 results_list = []
 
 for fold, (train_index, test_index) in enumerate(tscv.split(X)):
@@ -67,12 +67,22 @@ for fold, (train_index, test_index) in enumerate(tscv.split(X)):
     X_tr_scaled = scaler.fit_transform(X_tr)
     X_va_scaled = scaler.transform(X_va)
 
-    # Fit Linear Regression
-    model = LinearRegression()
-    model.fit(X_tr_scaled, y_tr)
+   # 2. Initialize the regressor
+    regressor = xgb.XGBRegressor(
+        n_estimators=30,       # Keep trees low to prevent overfitting noise
+        max_depth=3,           # Shallow trees force macro-level rules
+        learning_rate=0.02,    # Small steps
+        reg_alpha=5.0,         # L1 Regularization
+        reg_lambda=10.0,       # L2 Regularization
+        subsample=0.8,
+        random_state=42
+    )
+
+    # 3. Train the model
+    regressor.fit(X_tr, y_tr)
 
     # Predict continuous returns
-    y_pred = model.predict(X_va_scaled)
+    y_pred = regressor.predict(X_va_scaled)
 
     fold_df = pd.DataFrame(
         {
