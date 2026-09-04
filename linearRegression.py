@@ -104,7 +104,7 @@ naive_rmse = np.sqrt(
     mean_squared_error(results_df["actual_return"], results_df["naive_pred"])
 )
 
-print("\n=== FIXED STATISTICAL METRICS ===")
+print("\n=== STATISTICAL METRICS ===")
 print(f"Model RMSE: {rmse:.4f}  |  Naive Baseline RMSE: {naive_rmse:.4f}")
 print(f"Model MAE:  {mae:.4f}")
 print(f"Model R^2:   {r2:.4f}")
